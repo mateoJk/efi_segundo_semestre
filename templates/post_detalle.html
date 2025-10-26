@@ -1,0 +1,134 @@
+{% extends "layout.html" %}
+
+{% block head_title %}{{ post.titulo }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <!-- Modal de confirmación para eliminar -->
+    <div class="modal fade" id="eliminarModal{{ post.id }}" tabindex="-1" aria-labelledby="modalLabel{{ post.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel{{ post.id }}">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas eliminar este post?
+                </div>
+                <div class="modal-footer">
+                    <form method="POST" action="{{ url_for('eliminar_post', post_id=post.id) }}">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a class="btn btn-link mb-4 fs-4" href="{{ url_for('posts') }}">Volver</a>
+
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <h3 class="card-title">{{ post.titulo }}</h3>
+            <h6 class="card-subtitle text-muted">por {{ post.autor.username }} - {{ post.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</h6>
+            {% if current_user.is_authenticated and current_user.id == post.usuario_id %}
+                <div class="dropdown position-absolute top-0 end-0 m-2">
+                    <button class="btn btn-sm btn-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        &#x22EE;
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('editar_post', post_id=post.id) }}">📝 Editar</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#eliminarModal{{ post.id }}">🗑️ Eliminar</a>
+                        </li>
+                    </ul>
+                </div>
+            {% endif %}
+            <p class="card-text mt-3">{{ post.contenido }}</p>
+            <div class="mb-2">
+                {% for cat in post.categorias %}
+                    <span class="badge bg-secondary">{{ cat.nombre }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h5>Comentarios ({{ post.comentarios|length }})</h5>
+
+        {% for comentario in post.comentarios %}
+            <div class="card mb-2 shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-1">
+                        {{ comentario.autor.username }}
+                        <small class="text-muted"> - {{ comentario.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</small>
+                    </h6>
+                    {% if current_user.is_authenticated and current_user.id == comentario.usuario_id %}
+                        <!-- Botón de opciones -->
+                        <div class="dropdown position-absolute top-0 end-0 m-2">
+                            <button class="btn btn-sm btn-secondary" type="button" data-bs-toggle="dropdown">
+                                &#x22EE;
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" data-bs-toggle="collapse" href="#editarComentario{{ comentario.id }}">📝 Editar</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#eliminarComentarioModal{{ comentario.id }}">🗑️ Eliminar</a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Formulario de edición inline -->
+                        <div class="collapse" id="editarComentario{{ comentario.id }}">
+                            <form method="POST" action="{{ url_for('editar_comentario', comentario_id=comentario.id) }}">
+                                <div class="mb-2">
+                                    <textarea name="contenido" class="form-control" rows="3" required>{{ comentario.contenido }}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#editarComentario{{ comentario.id }}">Cancelar</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    <p class="mb-0">{{ comentario.contenido }}</p>
+                </div>
+            </div>
+
+            <!-- Modal de eliminación -->
+            <div class="modal fade" id="eliminarComentarioModal{{ comentario.id }}" tabindex="-1" aria-labelledby="modalLabelComentario{{ comentario.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Confirmar eliminación</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            ¿Estás seguro de que deseas eliminar este comentario?
+                        </div>
+                        <div class="modal-footer">
+                            <form method="POST" action="{{ url_for('eliminar_comentario', comentario_id=comentario.id) }}">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-danger">Eliminar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p>No hay comentarios aún.</p>
+        {% endfor %}
+
+        {% if current_user.is_authenticated %}
+        <form method="POST" class="mt-4">
+            <div class="mb-2">
+                <textarea name="comentario_contenido" class="form-control" rows="3" placeholder="Dejá tu comentario..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Comentar</button>
+        </form>
+        {% else %}
+            <p><a href="{{ url_for('login') }}">Iniciá sesión</a> o <a href="{{ url_for('register') }}">Registrate</a> para comentar.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
