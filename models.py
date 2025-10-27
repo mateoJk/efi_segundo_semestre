@@ -5,14 +5,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db
 
-# ==================== Tabla intermedia Post-Categoria ====================
+# Tabla intermedia Post-Categoria
 post_categoria = db.Table(
     'post_categoria',
     db.Column('post_id', db.Integer, db.ForeignKey('post.id'), primary_key=True),
     db.Column('categoria_id', db.Integer, db.ForeignKey('categoria.id'), primary_key=True)
 )
 
-# ==================== Usuario ====================
+# Usuario
 class Usuario(UserMixin, db.Model):
     __tablename__ = 'usuario'
 
@@ -33,7 +33,7 @@ class Usuario(UserMixin, db.Model):
         return f'<Usuario {self.username}>'
 
 
-# ==================== Credenciales del Usuario ====================
+# Credenciales del Usuario 
 class UserCredentials(db.Model):
     __tablename__ = 'user_credentials'
 
@@ -54,7 +54,7 @@ class UserCredentials(db.Model):
         return f'<UserCredentials role={self.role}>'
 
 
-# ==================== Post ====================
+# Post
 class Post(db.Model):
     __tablename__ = 'post'
 
@@ -79,7 +79,7 @@ class Post(db.Model):
         return f'<Post {self.titulo}>'
 
 
-# ==================== Comentario ====================
+# Comentario
 class Comentario(db.Model):
     __tablename__ = 'comentario'
 
@@ -95,7 +95,7 @@ class Comentario(db.Model):
         return f'<Comentario {self.id}>'
 
 
-# ==================== Categoria ====================
+# Categoria
 class Categoria(db.Model):
     __tablename__ = 'categoria'
 
